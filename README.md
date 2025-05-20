@@ -35,6 +35,43 @@ Overview:
 This section details the system’s design, AI modules, interfaces, and usage instructions for stakeholders.
 Documentation Sections:
 •	System Architecture: Diagrams illustrating AI algorithms for demand prediction, logistics workflows, and IoT integrations.
+Focused on building core modules (logistics, vendor interaction, IoT integration, security).
+
+ *Aimed at optimizing and scaling these modules for high performance, real-time capability, and secure large-scale use.
+
+ Introduced vendor dashboard, communication interface, and order approval tools.
+
+* Improved dashboard responsiveness, added communication logs, and enhanced performance/reliability.
+
+*Built a dashboard for tracking deliveries with location updates.
+* Added route optimization algorithms and live map integration for better delivery time predictions.
+
+
+* Basic sensor support (temperature, RFID), with data from AWS/Azure IoT APIs.
+
+*Real-time syncing, faster data processing, and automated alert/inventory actions.
+
+* Introduced encryption, access control, and GDPR/ISO compliance.
+
+*Upgraded to TLS/AES encryption, added penetration testing, and ensured security under high traffic.
+* Internal user testing and UI/UX feedback collection.
+
+*Conducted load testing, uptime/error tracking, and performance metrics collection.
+
+
+*Focused on user onboarding, data accuracy, and lack of IoT devices.
+
+* Addressed system scalability, advanced security, and IoT device compatibility.
+
+
+
+*System is functional, secure, and ready for further enhancement.
+
+*Optimized system ready for deployment with high performance and real-time capabilities.
+
+* Move to predictive analytics, broader IoT automation, and scaling.
+
+* Final deployment, user adoption evaluation, and system launch preparation.
 •	Code Documentation: Source code with comments for forecasting modules, inventory APIs, and dashboard logic.
 •	User Guide: Instructions for inventory managers and procurement officers on using the dashboard and analytics.
 •	Administrator Guide: Steps for managing system configurations, updates, and performance audits.
