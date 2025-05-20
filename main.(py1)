@@ -1,0 +1,176 @@
+import datetime
+from typing import List, Dict, Optional
+
+class Product:
+    def __init__(self, product_id: int, name: str, price: float, quantity: int, supplier_id: int):
+        self.product_id = product_id
+        self.name = name
+        self.price = price
+        self.quantity = quantity
+        self.supplier_id = supplier_id
+    
+    def __str__(self):
+        return f"ID: {self.product_id}, Name: {self.name}, Price: ${self.price}, Quantity: {self.quantity}, Supplier ID: {self.supplier_id}"
+
+class Supplier:
+    def __init__(self, supplier_id: int, name: str, contact: str, products_supplied: List[int]):
+        self.supplier_id = supplier_id
+        self.name = name
+        self.contact = contact
+        self.products_supplied = products_supplied
+    
+    def __str__(self):
+        return f"ID: {self.supplier_id}, Name: {self.name}, Contact: {self.contact}, Products Supplied: {len(self.products_supplied)}"
+
+class Order:
+    def __init__(self, order_id: int, customer_id: int, products: Dict[int, int], order_date: datetime.date, status: str):
+        self.order_id = order_id
+        self.customer_id = customer_id
+        self.products = products  # {product_id: quantity}
+        self.order_date = order_date
+        self.status = status  # "Pending", "Shipped", "Delivered", "Cancelled"
+    
+    def __str__(self):
+        return f"Order ID: {self.order_id}, Customer ID: {self.customer_id}, Status: {self.status}, Items: {len(self.products)}"
+
+class SupplyChain:
+    def __init__(self):
+        self.products: Dict[int, Product] = {}
+        self.suppliers: Dict[int, Supplier] = {}
+        self.orders: Dict[int, Order] = {}
+        self.next_product_id = 1
+        self.next_supplier_id = 1
+        self.next_order_id = 1
+    
+    def add_product(self, name: str, price: float, quantity: int, supplier_id: int) -> Product:
+        """Add a new product to inventory"""
+        product = Product(self.next_product_id, name, price, quantity, supplier_id)
+        self.products[self.next_product_id] = product
+        self.next_product_id += 1
+        
+        # Add product to supplier's list
+        if supplier_id in self.suppliers:
+            self.suppliers[supplier_id].products_supplied.append(product.product_id)
+        
+        return product
+    
+    def add_supplier(self, name: str, contact: str) -> Supplier:
+        """Add a new supplier"""
+        supplier = Supplier(self.next_supplier_id, name, contact, [])
+        self.suppliers[self.next_supplier_id] = supplier
+        self.next_supplier_id += 1
+        return supplier
+    
+    def place_order(self, customer_id: int, products: Dict[int, int]) -> Optional[Order]:
+        """Place a new order after checking inventory"""
+        # Check if all products are available in required quantity
+        for product_id, quantity in products.items():
+            if product_id not in self.products:
+                print(f"Error: Product ID {product_id} not found")
+                return None
+            if self.products[product_id].quantity < quantity:
+                print(f"Error: Insufficient stock for product ID {product_id}")
+                return None
+        
+        # Create order
+        order = Order(
+            order_id=self.next_order_id,
+            customer_id=customer_id,
+            products=products,
+            order_date=datetime.date.today(),
+            status="Pending"
+        )
+        self.orders[self.next_order_id] = order
+        self.next_order_id += 1
+        
+        # Update inventory
+        for product_id, quantity in products.items():
+            self.products[product_id].quantity -= quantity
+        
+        return order
+    
+    def update_order_status(self, order_id: int, new_status: str) -> bool:
+        """Update order status"""
+        if order_id not in self.orders:
+            print(f"Error: Order ID {order_id} not found")
+            return False
+        self.orders[order_id].status = new_status
+        return True
+    
+    def restock_product(self, product_id: int, quantity: int) -> bool:
+        """Restock a product"""
+        if product_id not in self.products:
+            print(f"Error: Product ID {product_id} not found")
+            return False
+        self.products[product_id].quantity += quantity
+        return True
+    
+    def generate_inventory_report(self) -> str:
+        """Generate inventory report"""
+        report = "==== INVENTORY REPORT ====\n"
+        report += f"Total Products: {len(self.products)}\n"
+        report += "Product Details:\n"
+        for product in self.products.values():
+            report += f" - {product}\n"
+        return report
+    
+    def generate_sales_report(self) -> str:
+        """Generate sales report"""
+        report = "==== SALES REPORT ====\n"
+        report += f"Total Orders: {len(self.orders)}\n"
+        
+        # Calculate total revenue
+        revenue = 0.0
+        for order in self.orders.values():
+            if order.status != "Cancelled":
+                for product_id, quantity in order.products.items():
+                    revenue += self.products[product_id].price * quantity
+        
+        report += f"Total Revenue: ${revenue:.2f}\n"
+        report += "Recent Orders:\n"
+        for order in list(self.orders.values())[-5:]:  # Show last 5 orders
+            report += f" - {order}\n"
+        return report
+    
+    def generate_supplier_report(self) -> str:
+        """Generate supplier report"""
+        report = "==== SUPPLIER REPORT ====\n"
+        report += f"Total Suppliers: {len(self.suppliers)}\n"
+        report += "Supplier Details:\n"
+        for supplier in self.suppliers.values():
+            report += f" - {supplier}\n"
+        return report
+
+# Example Usage
+def main():
+    # Initialize supply chain
+    scm = SupplyChain()
+    
+    # Add suppliers
+    supplier1 = scm.add_supplier("Global Electronics", "contact@globalelectronics.com")
+    supplier2 = scm.add_supplier("Quality Textiles", "sales@qualitytextiles.com")
+    
+    # Add products
+    scm.add_product("Laptop", 999.99, 50, supplier1.supplier_id)
+    scm.add_product("Smartphone", 699.99, 100, supplier1.supplier_id)
+    scm.add_product("T-Shirt", 19.99, 200, supplier2.supplier_id)
+    scm.add_product("Jeans", 49.99, 150, supplier2.supplier_id)
+    
+    # Place orders
+    order1 = scm.place_order(101, {1: 2, 3: 5})  # 2 laptops, 5 t-shirts
+    order2 = scm.place_order(102, {2: 1, 4: 2})  # 1 smartphone, 2 jeans
+    
+    # Update order status
+    scm.update_order_status(order1.order_id, "Shipped")
+    scm.update_order_status(order2.order_id, "Delivered")
+    
+    # Restock a product
+    scm.restock_product(1, 10)  # Add 10 more laptops
+    
+    # Generate reports
+    print(scm.generate_inventory_report())
+    print(scm.generate_sales_report())
+    print(scm.generate_supplier_report())
+
+if __name__ == "__main__":
+    main()
